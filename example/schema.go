@@ -1,19 +1,23 @@
 package main
 
-import "github.com/graphql-go/graphql"
+import (
+	"database/sql"
 
-var schema, _ = graphql.NewSchema(graphql.SchemaConfig{
-	Query: graphql.NewObject(graphql.ObjectConfig{
-		Name:        "Query",
-		Description: "Root Query",
-		Fields: graphql.Fields{
-			"test": &graphql.Field{
-				Type:        graphql.String,
-				Description: "Test field",
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					return "test", nil
-				},
-			},
+	"github.com/dundunlabs/gqlgo"
+	"github.com/dundunlabs/gqlgo/example/types"
+)
+
+func newSchema(db *sql.DB) gqlgo.Schema {
+	userFields := types.NewUserFields(db)
+	postFields := types.NewPostFields(db)
+
+	types.User.Fields = userFields
+	types.Post.Fields = postFields
+
+	return gqlgo.Schema{
+		Query: newQuery(db),
+		Config: gqlgo.Config{
+			IDFromObject: gqlgo.RelayIDFromObject,
 		},
-	}),
-})
+	}
+}
