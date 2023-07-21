@@ -5,17 +5,15 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/dundunlabs/gqlgo/playground"
+	"github.com/dundunlabs/gqlgo/explorer"
 	"github.com/graphql-go/graphql"
 )
 
 type HandlerOption func(h *Handler)
 
-func WithPlayground(v bool) HandlerOption {
+func WithExplorer(explorer explorer.Explorer) HandlerOption {
 	return func(h *Handler) {
-		if v {
-			h.playgroundTmpl = playground.TemplateHTML
-		}
+		h.explorerTmpl = explorer
 	}
 }
 
@@ -25,9 +23,13 @@ type HandlerBody struct {
 	Variables     map[string]any `json:"variables"`
 }
 
-func NewHandler(schema graphql.Schema, opts ...HandlerOption) *Handler {
+func NewHandler(schema Schema, opts ...HandlerOption) *Handler {
 	h := new(Handler)
-	h.schema = schema
+	s, err := schema.graphqlSchema()
+	if err != nil {
+		panic(err)
+	}
+	h.schema = s
 	for _, opt := range opts {
 		opt(h)
 	}
@@ -35,15 +37,15 @@ func NewHandler(schema graphql.Schema, opts ...HandlerOption) *Handler {
 }
 
 type Handler struct {
-	schema         graphql.Schema
-	playgroundTmpl *template.Template
+	schema       graphql.Schema
+	explorerTmpl *template.Template
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		if h.playgroundTmpl != nil {
-			h.playgroundTmpl.Execute(w, playground.Data{
+		if h.explorerTmpl != nil {
+			h.explorerTmpl.Execute(w, explorer.Data{
 				Endpoint: r.URL.Path,
 			})
 			return
