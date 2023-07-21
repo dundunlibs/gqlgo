@@ -11,13 +11,13 @@ type Field struct {
 	Resolve     graphql.FieldResolveFn
 }
 
-func (f *Field) graphqlField(config Config) *graphql.Field {
-	resolve, ml := f.Resolve, len(f.Middlewares)
+func (f *Field) graphqlField(s Schema) *graphql.Field {
+	graphqlType, resolve, ml := f.Type.Output(s), f.Resolve, len(f.Middlewares)
 
 	// apply global ID if needed
-	if f.Type == ID && config.IDFromObject != nil {
+	if isID(graphqlType) && s.Config.IDFromObject != nil {
 		resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			return config.IDFromObject(p.Source, p.Info, p.Context)
+			return s.Config.IDFromObject(p.Source, p.Info, p.Context)
 		}
 	}
 
@@ -27,7 +27,7 @@ func (f *Field) graphqlField(config Config) *graphql.Field {
 	}
 
 	return &graphql.Field{
-		Type:        f.Type.Output(config),
+		Type:        graphqlType,
 		Description: f.Description,
 		Resolve:     resolve,
 	}

@@ -4,16 +4,16 @@ import "github.com/graphql-go/graphql"
 
 func FromGraphqlScalar(scalar *graphql.Scalar) *Scalar {
 	return &Scalar{
-		Scalar: scalar,
+		scalar: scalar,
 	}
 }
 
 type Scalar struct {
-	*graphql.Scalar
+	scalar *graphql.Scalar
 }
 
-func (s *Scalar) Output(Config) graphql.Output {
-	return s.Scalar
+func (s *Scalar) Output(Schema) graphql.Output {
+	return s.scalar
 }
 
 var ID = FromGraphqlScalar(graphql.ID)
