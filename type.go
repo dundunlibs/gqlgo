@@ -17,6 +17,7 @@ func (t *Type) graphqlObject(s Schema) *graphql.Object {
 			Description: t.Description,
 			Fields:      graphql.Fields{},
 		})
+
 		// append fields later to avoid cycle initialization
 		for k, f := range t.Fields.graphqlFields(s) {
 			s.graphqlObjects[t].AddFieldConfig(k, f)

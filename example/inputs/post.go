@@ -16,5 +16,9 @@ var PostAttributes = &gqlgo.Input{
 			Type:    gqlgo.String,
 			Default: "",
 		},
+		"authorId": &gqlgo.Arg{
+			Type:        gqlgo.NotNull(gqlgo.ID),
+			Description: "Author's ID",
+		},
 	},
 }
