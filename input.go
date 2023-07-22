@@ -9,11 +9,20 @@ type Input struct {
 }
 
 func (i *Input) graphqlInput(s Schema) *graphql.InputObject {
-	return graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:        i.Name,
-		Description: i.Description,
-		Fields:      i.Args.graphqlInputFields(s),
-	})
+	if s.graphqlInputs[i] == nil {
+		s.graphqlInputs[i] = graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:        i.Name,
+			Description: i.Description,
+			Fields:      make(graphql.InputObjectConfigFieldMap),
+		})
+
+		// append fields later to avoid cycle initialization
+		for k, f := range i.Args.graphqlInputFields(s) {
+			s.graphqlInputs[i].AddFieldConfig(k, f)
+		}
+	}
+
+	return s.graphqlInputs[i]
 }
 
 func (i *Input) Output(s Schema) graphql.Output {
