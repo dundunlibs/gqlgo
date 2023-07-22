@@ -1,14 +1,21 @@
 package gqlgo
 
 import (
+	"encoding/json"
+
 	"github.com/graphql-go/graphql"
 )
+
+type ResolveParams graphql.ResolveParams
+type FieldResolver func(p ResolveParams) (any, error)
+type FieldMiddlewareFn func(next FieldResolver) FieldResolver
 
 type Field struct {
 	Type        Output
 	Description string
+	Args        Args
+	Resolve     FieldResolver
 	Middlewares []FieldMiddlewareFn
-	Resolve     graphql.FieldResolveFn
 }
 
 func (f *Field) graphqlField(s Schema) *graphql.Field {
@@ -16,7 +23,7 @@ func (f *Field) graphqlField(s Schema) *graphql.Field {
 
 	// apply global ID if needed
 	if isID(graphqlType) && s.Config.IDFromObject != nil {
-		resolve = func(p graphql.ResolveParams) (interface{}, error) {
+		resolve = func(p ResolveParams) (interface{}, error) {
 			return s.Config.IDFromObject(p.Source, p.Info, p.Context)
 		}
 	}
@@ -26,11 +33,36 @@ func (f *Field) graphqlField(s Schema) *graphql.Field {
 		resolve = f.Middlewares[ml-i](resolve)
 	}
 
-	return &graphql.Field{
+	field := &graphql.Field{
 		Type:        graphqlType,
 		Description: f.Description,
-		Resolve:     resolve,
 	}
+
+	if f.Args != nil {
+		field.Args = f.Args.graphqlArgs(s)
+	}
+
+	if resolve != nil {
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			return resolve(ResolveParams(p))
+		}
+	}
+
+	return field
 }
 
-type FieldMiddlewareFn func(next graphql.FieldResolveFn) graphql.FieldResolveFn
+func defaultFieldResolver(p graphql.ResolveParams) (interface{}, error) {
+	var src map[string]any
+	if s, ok := p.Source.(map[string]any); ok {
+		src = s
+	} else {
+		data, err := json.Marshal(p.Source)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(data, &src); err != nil {
+			return nil, err
+		}
+	}
+	return src[p.Info.FieldName], nil
+}

@@ -5,7 +5,6 @@ import (
 
 	"github.com/dundunlabs/gqlgo"
 	"github.com/dundunlabs/gqlgo/example/models"
-	"github.com/graphql-go/graphql"
 )
 
 var User = &gqlgo.Type{
@@ -25,7 +24,7 @@ func NewUserFields(db *sql.DB) gqlgo.Fields {
 		},
 		"posts": &gqlgo.Field{
 			Type: gqlgo.NotNull(gqlgo.List(Post)),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			Resolve: func(p gqlgo.ResolveParams) (interface{}, error) {
 				rows, err := db.QueryContext(p.Context, "SELECT * FROM posts WHERE author_id = ?", p.Source.(models.User).ID)
 				posts := []models.Post{}
 				if err != nil {

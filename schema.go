@@ -8,8 +8,9 @@ type Schema struct {
 	// used to cache all posible types
 	graphqlObjects map[*Type]*graphql.Object
 
-	Query  *Type
-	Config Config
+	Query    *Type
+	Mutation *Type
+	Config   Config
 }
 
 func (s Schema) graphqlSchema() (graphql.Schema, error) {
@@ -20,6 +21,9 @@ func (s Schema) graphqlSchema() (graphql.Schema, error) {
 	schemaConfig := graphql.SchemaConfig{}
 	if s.Query != nil {
 		schemaConfig.Query = s.Query.graphqlObject(s)
+	}
+	if s.Mutation != nil {
+		schemaConfig.Mutation = s.Mutation.graphqlObject(s)
 	}
 
 	return graphql.NewSchema(schemaConfig)

@@ -6,7 +6,6 @@ import (
 	"github.com/dundunlabs/gqlgo"
 	"github.com/dundunlabs/gqlgo/example/models"
 	"github.com/dundunlabs/gqlgo/example/types"
-	"github.com/graphql-go/graphql"
 )
 
 func newQuery(db *sql.DB) *gqlgo.Type {
@@ -17,7 +16,7 @@ func newQuery(db *sql.DB) *gqlgo.Type {
 			"users": &gqlgo.Field{
 				Type:        gqlgo.List(gqlgo.NotNull(types.User)),
 				Description: "All users",
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				Resolve: func(p gqlgo.ResolveParams) (interface{}, error) {
 					rows, err := db.QueryContext(p.Context, "SELECT * FROM users")
 					users := []models.User{}
 					if err != nil {
@@ -38,7 +37,7 @@ func newQuery(db *sql.DB) *gqlgo.Type {
 			"posts": &gqlgo.Field{
 				Type:        gqlgo.List(gqlgo.NotNull(types.Post)),
 				Description: "All posts",
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				Resolve: func(p gqlgo.ResolveParams) (interface{}, error) {
 					rows, err := db.QueryContext(p.Context, "SELECT * FROM posts")
 					posts := []models.Post{}
 					if err != nil {

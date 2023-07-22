@@ -15,7 +15,8 @@ func newSchema(db *sql.DB) gqlgo.Schema {
 	types.Post.Fields = postFields
 
 	return gqlgo.Schema{
-		Query: newQuery(db),
+		Query:    newQuery(db),
+		Mutation: newMutation(db),
 		Config: gqlgo.Config{
 			IDFromObject: gqlgo.RelayIDFromObject,
 		},
