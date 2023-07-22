@@ -5,7 +5,6 @@ import (
 
 	"github.com/dundunlabs/gqlgo"
 	"github.com/dundunlabs/gqlgo/example/models"
-	"github.com/graphql-go/graphql"
 )
 
 var Post = &gqlgo.Type{
@@ -29,7 +28,7 @@ func NewPostFields(db *sql.DB) gqlgo.Fields {
 		},
 		"author": &gqlgo.Field{
 			Type: gqlgo.NotNull(User),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+			Resolve: func(p gqlgo.ResolveParams) (interface{}, error) {
 				row := db.QueryRowContext(p.Context, "SELECT * FROM users WHERE id = ? LIMIT 1", p.Source.(models.Post).AuthorID)
 				var user models.User
 				err := row.Scan(&user.ID, &user.Name)
